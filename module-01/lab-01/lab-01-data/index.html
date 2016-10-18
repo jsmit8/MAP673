@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset=utf-8 />
+    <title>Lab 01 Template</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+    <script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet.js"></script>
+
+    <script src="https://code.jquery.com/jquery-1.12.2.min.js"></script>
+
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v1.0.1/leaflet.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-statistics/1.0.1/simple_statistics.js"></script>
+
+    <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: whitesmoke;
+            font-family: Lato, sans-serif;
+            color: #0D0000;
+        }
+        
+        header {
+            width: 80%;
+            margin: 10px auto 10px auto;
+        }
+        
+        h1 {
+            display: inline-block;
+            margin-right: 20px;
+            color: #001323;
+        }
+        
+        h2 {
+            display: inline-block;
+            color: #001323;
+        }
+        
+        #map {
+            width: 80%;
+            height: 540px;
+            margin: 10px auto 10px auto;
+            background: whitesmoke;
+            border: 2px solid #dddedf;
+        }
+        
+        footer {
+            width: 80%;
+            margin: 10px auto 10px auto;
+        }
+        
+        p {
+            font-size: 1em;
+            color: #001323;
+        }
+        
+        .legend {
+            padding: 6px 8px;
+            font-size: 1em;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+        
+        .legend h3 {
+            font-size: 1.1em;
+            font-weight: normal;
+            color: #001323;
+            margin: 0 0 10px 0;
+        }
+        
+        .legend span {
+            width: 20px;
+            height: 20px;
+            float: left;
+            margin: 0 10px 4px 0;
+        }
+        
+        .legend label {
+            font-size: 1.1em;
+        }
+        
+        .legend label:after {
+            content: '';
+            display: block;
+            clear: both;
+        }
+        
+    </style>
+</head>
+
+<body>
+    <header>
+
+        <h1></h1>
+        <h2></h2>
+    </header>
+
+    <div id='map'></div>
+
+    <footer>
+        <p>Map created by Jackie Smith, PhD</p>
+        <p>Created on October 15, 2016</p>
+        <p>Color Palette by: <a href="http://colorbrewer2.org/#type=sequential&scheme=Blues&n=7">ColorBrewer 2.0</a></p>
+        <p>This map shows the number of vacant houses as a proportion of the total number of housing units per county in Kentucky. The purpose is to illustrate the disparity in vacancy rates across the state and bring to attention where abnormally high and low rates of vacancy exist. </p>
+        <p>The cartographic symbology in this map influences the interpretation of the data, since the map maker has complete control of the class breaks and color schemes used even if the underlying values that are mapped are not changed. For example, if the data was classified into two class breaks symbolized by very similar colors the map would communicate that vacancy rates did not deviate significantly statewide and were generally equalized. By using a gradient approach, with multiple class breaks, subtle nuances in rates are illustrated in a clearer fashion. </p> 
+        <p>This map supports the opinion that vacancy rates are relatively low in several counties while Menifee and Lyon counties have a very high relative rate of vacancy. This could be used as an argument about the robustness of the economy or housing market across Kentucky, and the effect that these conditions have on residents in specific areas.</p>
+    </footer>
+
+    <script>
+		
+		$("h1").html("Kentucky Vacancy Rates");
+        $("h2").html("Shown as a percentage of the total number of housing units in each county");
+        
+		var options = {
+            zoomControl: false,
+			zoomSnap: .1
+        }
+        var map = L.map('map', options);
+        map.addControl(L.control.zoom({
+            position: 'topright'
+        }));
+        var dataLayer
+            , attribute = "VACANT"
+            , norm = "TOTAL";
+        $.getJSON("ky_counties_housing.json", function (data) {
+            dataLayer = L.geoJson(data, {
+                style: function (feature) {
+                    return {
+                        color: '#dddddd'
+                        , weight: 1
+                        , fillOpacity: 1
+                        , fillColor: '#1f78b4'
+                    };
+                }
+            }).addTo(map);
+			
+			map.fitBounds(dataLayer.getBounds());
+			
+            drawMap();
+        });
+        
+        function drawMap() {
+            var breaks = getClassBreaks();
+            dataLayer.eachLayer(function (layer) {
+                var percentage = layer.feature.properties[attribute] / layer.feature.properties[norm];
+                layer.setStyle({
+                        fillColor: getColor(layer.feature.properties[attribute] / layer.feature.properties[norm], breaks)
+                    })
+                layer.bindPopup("<b>" + layer.feature.properties.NAME + "</b> County: <br>" + attribute + ": " + (percentage * 100).toLocaleString() + "%");
+        
+            });
+            
+            drawLegend(breaks);
+        };
+        function getColor(d, breaks) {
+            if (d <= breaks[0][1]) {
+                return '#9ecae1';
+            } else if (d <= breaks[1][1]) {
+                return '#6baed6';
+            } else if (d <= breaks[2][1]) {
+                return '#4292c6';
+            } else if (d <= breaks[3][1]) {
+                return '#2171b5'
+            } else if (d <= breaks[4][1]) {
+                return '#084594'
+            }
+        }
+        function getClassBreaks() {
+            var values = [];
+            dataLayer.eachLayer(function (layer) {
+                var value = layer.feature.properties[attribute] / layer.feature.properties[norm];
+                values.push(value);
+            });
+    
+            var clusters = ss.ckmeans(values, 5);
+        
+            var breaks = clusters.map(function (cluster) {
+                return [cluster[0], cluster.pop()];
+            });
+            return breaks;
+        };
+        function drawLegend(breaks) {
+            var legend = L.control({
+                position: 'topleft'
+            });
+            legend.onAdd = function () {
+                var div = L.DomUtil.create('div', 'legend');
+                div.innerHTML = "<h3>" + attribute + " per " + norm + "</h3>";
+                for (var i = 0; i < breaks.length; i++) {
+                    var color = getColor(breaks[i][0], breaks);
+                    div.innerHTML +=
+                        '<span style="background:' + color + '"></span> ' +
+                        '<label>' + (breaks[i][0] * 100).toLocaleString() +"%" + ' &mdash; ' +
+                        (breaks[i][1] * 100).toLocaleString() + "%" + '</label>';
+                }
+                return div;
+            };
+            legend.addTo(map);
+        }
+    </script>
+
+</body>
+
+</html>
