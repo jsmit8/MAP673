@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset=utf-8 />
+    <title>Lab 02 Advanced User Interaction in Web Maps </title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+<!--    pull script sources for jquery, leaflet, and simple statistics libraries as well as leaflet stylesheet and google fonts-->
+    <script src="https://code.jquery.com/jquery-1.12.2.min.js"></script>
+    <script src="http://cdn.leafletjs.com/leaflet/v1.0.1/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-statistics/1.0.1/simple_statistics.js"></script>
+    
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v1.0.1/leaflet.css" />
+    <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+
+    <style>
+/*        define style for basic map elements*/
+        body {
+            margin: 0;
+            padding: 0;
+            background: whitesmoke;
+            font-family: Lato, sans-serif;
+            color: #0D0000;
+        }
+        
+        header {
+            width: 80%;
+            margin: 10px auto 10px auto;
+        }
+        
+        h1 {
+            display: inline-block;
+            margin-right: 20px;
+            color: #001323;
+        }
+        
+        h2 {
+            display: inline-block;
+            color: #001323;
+        }
+        
+        #map {
+            width: 80%;
+            height: 540px;
+            margin: 10px 10%;
+            background: whitesmoke;
+            border: 2px solid #dddedf;
+        }
+        
+        footer {
+            padding: 6px 10%;
+            width: 80%;
+        }
+        
+        p {
+            font-size: 1em;
+            color: #001323;
+        }
+        
+/*        define style properties of legend element*/
+        .legend {
+            padding: 6px 8px;
+            font-size: 1em;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+        
+/*        define font size, weight, color and margin for the legend header*/
+        .legend h3 {
+            font-size: 1.1em;
+            font-weight: normal;
+            color: #001323;
+            margin: 0 0 10px 0;
+        }
+        
+/*        give each span element some width and height and float on the left side so that the labels show up next to them*/
+        .legend span {
+            width: 20px;
+            height: 20px;
+            float: left;
+            margin: 0 10px 4px 0;
+        }
+        
+/*        give a font size to the legend label*/
+        .legend label {
+            font-size: 1.1em;
+        }
+        
+/*        after each label element clear the float property so that the next span element will not float next to it*/
+        .legend label:after {
+            content: '';
+            display: block;
+            clear: both;
+        }
+        
+/*        give a style to the info element*/
+        .info {
+            padding: 6px 8px;
+            font-size: 1em;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            text-align: right;
+        }
+        
+        .info h3 {
+            margin: 0;
+        }
+        
+/*        set max width for leaflet popups*/
+        .leaflet-popup-content {
+            max-width: 160px;
+        }
+        
+        /*        Add a margin to our UI control menu*/
+        #ui-controls {
+            margin-left: 10%;
+        }
+        
+        /*        add font size and margin to ui control buttons, this is specific to labels with the parent of ui-controls*/
+        #ui-controls label {
+            font-size: 1em;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Kentucky's Housing Market Vacancies:</h1>
+        <h2>A MAP673 interactive map</h2>
+    </header>
+
+
+    <!--    Adding a div called ui-controls that creates an HTML menu list of options.-->
+    <div id='ui-controls'>
+        <label>Choose a data attribute:</label>
+<!--        create a select menu with the id of "vacant"-->
+        <select id="vacant">
+            <!--            The selected boolean below indicates which is the default value-->
+<!--            the option values are the value that will be passed to the other portions of the script, the text within the tags is what will show up on the select menu-->
+            <option value="VACANT_FOR" selected>vacant units for rent</option>
+            <option value="VACANT_REN">vacant units, rented not occupied</option>
+            <option value="VACANT_SEA"> vacant units, used seasonally or for recreational use only </option>
+        </select>
+    </div>
+
+    <div id='map'></div>
+
+    <footer>
+        <p>Map authored by Jackie Smith, PhD</p>
+        <p>Created on October 22, 2016</p>
+        <p>Color Palette by: <a href="http://colorbrewer2.org/#type=qualitative&scheme=Set2&n=5">ColorBrewer 2.0</a></p>
+        <p>This map shows mulitple vacancy statistics by County in Kentucky. All statistics are shown as a percentage of the total number of vacant properties. Choose the variable you want to illustrate on the map from the drop down menu, or mouse over a county for more detailed information.
+        </p>
+    </footer>
+
+    <script>
+        
+//        create labels that relate to attribute properties. These will be input into the legend and options box to improve legibility
+        var labels = {
+            "VACANT": "vacant units",
+            "VACANT_FOR": "% vacant units for rent",
+            "VACANT_REN": "% vacant units, rented not occupied",
+            "VACANT_SEA": "% vacant units, used seasonally or for recreational use only"
+        }
+        
+//        declare the options that will define the map and be passed to the L.map function
+        var options = {
+            center: [37.8, -85.8]
+            , zoom:  7.8         
+            , minZoom: 7.8
+            , maxZoom: 7.8
+            , dragging: false
+            , zoomControl: false
+        }
+        
+//        create a map using leaflet and pass it the options above
+        var map = L.map('map', options);
+
+//        create global variables for the dataLayer, attribute, and norm (the attribute will be changed later but the default is VACANT_FOR)
+        var dataLayer
+            , attribute = "VACANT_FOR"
+            , norm = "VACANT";
+
+        //        Use jQuery to load the JSON file into the map
+        $.getJSON("ky_counties_housing.json", function (data) {
+            //Use leaflet to turn the JSON file into a geoJson layer with particular style properties
+            dataLayer = L.geoJson(data, {
+                style: function (feature) {
+                    return {
+                        color: '#dddddd'
+                        , weight: 2
+                        , fillOpacity: 1
+                        , fillColor: '#1f78b4'
+                    };
+                }
+            }).addTo(map);
+
+//            call the drawLegend function
+            drawLegend();
+
+//            call the drawMap function
+            drawMap();
+
+//            call the buildID function
+            buildUI();
+
+//            call the drawInfo function
+            drawInfo();
+
+        });
+
+
+//        define the drawMap function which gets the class breaks, sets the style for each layer, adds the popup to the layer, and finally updates the map legend
+        function drawMap() {
+
+//            assign the breaks variable as the output value of the getClassBreaks function
+            var breaks = getClassBreaks();
+
+//            run this function on each layer in the map to set the style and popup content
+            dataLayer.eachLayer(function (layer) {
+
+//                simplify the current layer.feature.properties into a single variable called props
+                var props = layer.feature.properties;
+                console.log(props);
+                
+//                set the style of the layer by feeding the percentage value of the layer attribute variable divided by the Norm (total number of vacant units) into the getColor function
+                layer.setStyle({
+                    fillColor: getColor(props[attribute] /
+                        props[norm], breaks)
+                });
+                
+//                add a popup to each layer based on the the properties of the county that is automatically updated based on the currently selected attribute variable
+                layer.bindPopup("<b>" + props["NAME"] + " County</b></br>" +
+                    labels[attribute] + ": " +
+                    ((props[attribute] / props[norm]) * 100).toLocaleString());
+            });
+            
+//            run the update legend function, feeding in the breaks values
+            updateLegend(breaks);
+
+        }
+
+//        define the drawInfo function, which creates a control element called info and adds it to the map. This is originally hidden until the updateInfo function is called on it
+        function drawInfo() {
+            
+//            establish the info box as a leaflet control object, and position it in the top right.
+            var info = L.control({
+                position: 'topright'
+            });
+
+//            create an HTML div element in the info class
+            info.onAdd = function (map) {
+                var div = L.DomUtil.create('div', 'info');
+                return div;
+            }
+            
+//            add the info element to the map and hide it
+            info.addTo(map);
+            $(".info").hide();
+        }
+
+//        define the updateInfo function which feeds in each layer property and generates a custom HTML box based on the current layer, this is run on a mouseover event in a different portion of the script.
+        function updateInfo(layer) {
+
+//            create an abbreviated variable for the layer properties
+            var props = layer.feature.properties;
+
+//            create an html object that displays all properties of the current layer. 
+            var html = "<h3>" + props['NAME'] + " County</h3>" +
+                "total # vacant units: <b>" + props["VACANT"] + "</b><br>" +
+                "# vacant units for rent: <b>" + props["VACANT_FOR"] + "</b><br>" +
+                "# vacant units, rented not occupied: <b>" + props["VACANT_REN"] + "</b><br>" +
+                "# vacant units, used seasonally or for recreational use only: <b>" + props["VACANT_SEA"] + "</b>"
+
+//            insert the html text from above into the .info element
+            $(".info").html(html);
+        }
+
+        //        this function selects the element and then runs an event handles when the user changes the select portion of the element
+        function buildUI() {
+            $('select[id="vacant"]').change(function () {
+                //                the term 'this' refers to the context of the event. val() refers to the attribute value of the option. the $ sign must be inserted to use the jquery functionality.
+                console.log($(this).val());
+//                assign the currently selected value to "attribute"
+                attribute = $(this).val();
+                drawMap();
+            });
+        };
+
+
+//        define the updateLegend function which creates a legend element and populates the attribute label as the header, and adds the break values and colors 
+        function updateLegend(breaks) {
+
+//            define the legend variable as the .legend element
+            var legend = $('.legend');
+
+//            append the attribute label to the legend html
+            legend.html("<h3>" + labels[attribute] + "</h3>");
+
+//            loop through the breaks values
+            for (var i = 0; i < breaks.length; i++) {
+                
+//                use the getColor function on each of the breaks value to pick the color
+                var color = getColor(breaks[i][0], breaks);
+
+//                append a span element to the legend for each class break and update the color of the element to be based on the appropriate color for the class break that was picked by the getColor function, then populate the percentage value for that element by displaying both of the numbers in the array (stylized by multiplying times 100 and changing to a string).
+                legend.append(
+                    '<span style="background:' + color + '"></span> ' +
+                    '<label>' + (breaks[i][0] * 100).toLocaleString() + ' &mdash; ' +
+                    (breaks[i][1] * 100).toLocaleString() + '</label>');
+
+            }
+            
+        }
+
+//        the getClassBreaks function creates a list of values showing the percentages for each layer, and then runs the ckmeans method to determine clusters, returning an array showing the minimum and maximum value of each cluster as a breaks variable.
+        function getClassBreaks() {
+            
+//            create empty values list to populate with all the available values in the layer
+            var values = [];
+            
+//            loop through each layer and populate a list of the selected attribute value divided by the norm (to get a percentage of total)
+            dataLayer.eachLayer(function (layer) {
+                var value = layer.feature.properties[attribute] / layer.feature.properties[norm];
+//                the .push command appends each layer's value to the list
+                values.push(value);
+
+                //                add a mouseover event for each layer that calls the updateInfo function passing the current mouseover layer ('this') on to the function. The updateInfo function creates a popup based on what variable is currently selected.
+                layer.on('mouseover', function () {
+                    updateInfo(this);
+                    
+//                    set the style on mouseover to show a orange outline on the county
+                    this.setStyle({
+                        color: 'blue'
+                        , weight: 3
+                        , opacity: 0.9
+                })
+
+                });
+                
+//                set the style on mouseout back to a grey outline on the county
+                layer.on('mouseout', function () {
+                    this.setStyle({
+                        color: '#dddddd'
+                        , weight: 2
+                    })
+                })
+            });
+            
+//            Show the dataLayer info on mouseover. The jQuery command $(".info") is used to select the info element
+            dataLayer.on('mouseover', function () {
+                $(".info").show();
+                
+            });
+
+            // Hide the dataLayer info on mouseout. This will ensure that the info popup is hidden by default unless you are hovering over a layer. 
+            dataLayer.on('mouseout', function () {
+                $(".info").hide();
+                
+            });
+
+//            use the ss.ckmeans method to group the list of values into 5 categories (similar to natural breaks). the ckmeans function comes from the simple statistics library.
+            var clusters = ss.ckmeans(values, 5);
+
+//            create a variable called breaks that is a list of arrays containing the lowest and highest value in each cluster.
+            var breaks = clusters.map(function (cluster) {
+                return [cluster[0], cluster.pop()];
+            });
+            
+//            return the completed breaks variable as populated above so it can be fed into other functions
+            return breaks;
+        }
+
+//        the get color function uses the breaks variable to get colors for each layer based on the values
+        function getColor(d, breaks) {
+            
+//            use the input value of the current layer and return a specific color if it falls within the range of each breaks value. The if statement is structured in a way that first looks for values lower than the highest value of the first array, then looks for values lower than the highest value of the second array, etc...  Color palette from ColorBrewer2.0 cause otherwise I would make it look just gawdy and terrible
+            if (d <= breaks[0][1]) {
+                return '#66c2a5';
+            } else if (d <= breaks[1][1]) {
+                return '#fc8d62';
+            } else if (d <= breaks[2][1]) {
+                return '#8da0cb';
+            } else if (d <= breaks[3][1]) {
+                return '#e78ac3'
+            } else if (d <= breaks[4][1]) {
+                return '#a6d854'
+            }
+        }
+
+        
+//        define the drawLegend function. This creates the legend as a div in the DOM, gives it a position and adds it to the map element
+        function drawLegend() {
+
+//            define the legend as a control object and give it a position at the top left of the map
+            var legend = L.control({
+                position: 'topleft'
+            });
+
+//            give the legend an onAdd function that creates a div element
+            legend.onAdd = function () {
+
+//                create a div element called div within the legend class.
+                var div = L.DomUtil.create('div', 'legend');
+
+                return div;
+
+            };
+//          add the legend to the map cause maps need legends you know
+            legend.addTo(map);
+        }
+        
+    </script>
+
+</body>
+
+</html>
