@@ -170,9 +170,9 @@
 //        declare the options that will define the map and be passed to the L.map function
         var options = {
             center: [37.8, -85.8]
-            , zoom:  7.8         
-            , minZoom: 7.8
-            , maxZoom: 7.8
+            , zoom:  7.3         
+            , minZoom: 7.3
+            , maxZoom: 7.3
             , dragging: false
             , zoomControl: false
         }
@@ -380,15 +380,15 @@
             
 //            use the input value of the current layer and return a specific color if it falls within the range of each breaks value. The if statement is structured in a way that first looks for values lower than the highest value of the first array, then looks for values lower than the highest value of the second array, etc...  Color palette from ColorBrewer2.0 cause otherwise I would make it look just gawdy and terrible
             if (d <= breaks[0][1]) {
-                return '#66c2a5';
+                return '#eff3ff';
             } else if (d <= breaks[1][1]) {
-                return '#fc8d62';
+                return '#c6dbef';
             } else if (d <= breaks[2][1]) {
-                return '#8da0cb';
+                return '#6baed6';
             } else if (d <= breaks[3][1]) {
-                return '#e78ac3'
+                return '#42171b5'
             } else if (d <= breaks[4][1]) {
-                return '#a6d854'
+                return '#084594'
             }
         }
 
