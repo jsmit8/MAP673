@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset=utf-8 />
+    
+    <title>Livestock in Kenya</title>
+    
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    
+    <script src='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js'></script>
+
+    <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.2.0/leaflet-omnivore.min.js'></script>
+
+    <script src='https://code.jquery.com/jquery-1.12.0.min.js'></script>
+
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/simple-statistics/1.0.1/simple_statistics.min.js'></script>
+
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/simple-statistics/1.0.1/simple_statistics.min.js'></script>
+
+    <link href='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.css' rel='stylesheet' />
+
+    <link href='https://fonts.googleapis.com/css?family=Work+Sans:400,500,600' rel='stylesheet' type='text/css'>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #cbc9e2;
+            font-family: "Work Sans", sans-serif;
+        }
+        
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+        
+        #data-switcher {
+            position: absolute;
+            bottom: 300px;
+            right: 0.5%;
+            width: 125px;
+            padding: 8px 15px 4px;
+            background: #cbc9e2;
+            border-radius: 3px;
+            border: 2px solid #173e43;
+            color: #173e43;
+        }
+        
+        .slider {
+            width: 100%;
+        }
+        
+        #livestock {
+            position: absolute;
+            bottom: 523px;
+            right: 0.5%;
+            padding: 6px 15px 8px;
+            background: #cbc9e2;
+            border: 2px solid #173e43;
+            border-radius: 3px;
+            color: #173e43;
+            font-size: 1em;
+        }
+        
+        #livestock span {
+            font-size: 1.3em;
+            font-weight: 500;
+        }
+        
+        #legend {
+            position: absolute;
+            right: 0.5%;
+            bottom: 30px;
+            padding: 8px 15px;
+            background: #cbc9e2;
+            border: 2px solid #173e43;
+            border-radius: 3px;
+            color: #173e43;
+            width: 150px;
+            height: 200px;
+        }
+        
+        #legend h3 {
+            text-align: top center;
+            font-weight: 500;
+            margin: 0px 0 0px;
+        }
+        
+        #info {
+            padding: 8px 15px;
+            background: #cbc9e2;
+            border: 2px solid #173e43;
+            border-radius: 3px;
+            color: #173e43;
+            position: absolute;
+            font-size: 0.75em;
+            max-width: 250px;
+            display: none;
+            /* don't display until the user mouses over a county */
+            text-align: left;
+        }
+        
+        #info p {
+            margin: 3px 0 4px;
+        }
+        
+        .cattle {
+            color: #31a354;
+        }
+        
+        #info span:last-child {
+            font-size: 1.3em;
+            font-weight: 500;
+        }
+        
+        #side-panel {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 25%;
+            background: #cbc9e2;
+            border-top: 2px solid #173e43;
+            overflow-y: scroll;
+        }
+        
+        h1 {
+            padding: 5px 8px 5px 8px;
+            margin: 0;
+            background: grey;
+            color: #f2f0f7;
+            font-weight: 600;
+            font-size: 1.2em;
+            /*            text-align: right;*/
+        }
+        
+        h2 {
+            margin: 0;
+            padding: 0px 5px 0px 5px;
+            color: #173e43;
+            font-weight: 500;
+            font-size: 1.1em;
+            /*            text-align: right;*/
+        }
+        
+        h3 {
+            margin: 5;
+            padding: 0px 8px 55px 8px;
+            font-size: 1.25em;
+            font-weight: 400;
+        }
+        
+        h4 {
+            margin: 5;
+            font-size: 0.80em;
+            font-weight: 600;
+        }
+        
+        h5 {
+            margin: 5;
+            font-size: 0.7em;
+            font-weight: 400;
+        }
+        #side-panel p {
+            margin: 8px 0 4px;
+            padding: 0 25px 0 15px;
+            color: #cbc9e2;
+            text-align: right;
+            font-size: 1em;
+        }
+        
+        #side-panel p:after {
+            content: '';
+            display: block;
+            clear: both;
+        }
+        
+        #side-panel img {
+            float: right;
+            margin: 0 0 15px 15px;
+        }
+        
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            width: 75%;
+        }
+    </style>
+</head>
+
+<body>
+        <div id='map'></div>
+        <div id='side-panel'>
+            <h1>Livestock Per Capita in Kenya - 2009 counts by District</h1>
+            <p></p>
+            <h3>This map shows the livestock per capita in each district in Kenya. Select a species of animal in the option menu to see how many animals per person were observed in each area. For detailed information move your mouse over the circle. 
+            <h4>Data source:  <a href="https://opendata.go.ke/">Kenya Open Data Portal</a> and reflects information collected in the 2009 census.</h4>
+            <h5>Created by <a href="http://vdl.uky.edu/FacultyAndSectionHeads/DrJackieSmith.aspx"> Jackie Smith, PhD</a> on November 11, 2016</h5>
+            </h3>
+        </div>
+
+<!--set up the radio box form with preset livestock types that match the csv dataset (not all were included)-->
+        <form id='data-switcher'>
+            <h4>Options: Choose Animal Type</h4>
+            <input type="radio" name='animals' value="Cattle" checked> Cattle
+            <br>
+            <input type="radio" name='animals' value="Sheep"> Sheep
+            <br>
+            <input type="radio" name='animals' value="Goats"> Goats
+            <br>
+            <input type="radio" name='animals' value="Camels"> Camels
+            <br>
+            <input type="radio" name='animals' value="Donkeys"> Donkeys
+            <br>
+            <input type="radio" name='animals' value="Pigs"> Pigs
+            <br>
+
+        </form>
+
+        <!--    Set up the div element for the window that shows the current livestock type-->
+        <div id="livestock">Livestock Type: <span>Cattle</span></div>
+
+        <div id="legend">
+            <h4>Legend: Livestock Per Capita</h4>
+            <svg class="legend" width="200" height="300" position="absolute"></svg>
+        </div>
+
+        <!--    Set up the info window div element-->
+        <div id="info">
+            <p>District: <span></span></p>
+            <p class="livestockCapita"><span></span>: <span></span></p>
+        </div>
+
+
+        <script>
+//            set up my mapbox access token
+            L.mapbox.accessToken = 'pk.eyJ1IjoianNtaXQ4IiwiYSI6ImNpdXR6cmlzeDAyaTUydXBzY2pyeTQ1ajIifQ.OsqnhovcG7e5arkfsr2hyA';
+
+            //            use mapbox to load a map with the mapbox dark background with predefined center and zoom
+            var map = L.mapbox.map('map', 'mapbox.dark', {
+                center: [-.023, 37.9]
+                , zoom: 6
+                , minZoom: 5
+                , maxZoom: 9
+                , maxBounds: L.latLngBounds([-6.22, 30.72], [7.76, 47.83])
+            });
+     
+
+            //            set up the global variable for the current animal with cattle as a default
+            var currentAnimal = "Cattle";
+
+   
+            //            use omnivore to load the livestock data, when it is ready, run the drawMap function with the omnivore data fed in as a geoJSON
+            omnivore.csv('livestock.csv')
+                .on('ready', function (e) {
+                    drawMap(e.target.toGeoJSON())
+                })
+                //            if there is an error in omnivore, print the error message
+                .on('error', function (e) {
+                console.log(e.error[0].message);
+                });
+
+//            set up the drawMap function, which takes the livestock data and symbolizes it by a proportional symbol based on the livestock per capita
+    
+            function drawMap(livestockData) {
+                currentLayer = L.geoJson(livestockData, {
+                    pointToLayer: function (feature, layer) {
+                        return L.circleMarker(layer, {
+                            color: '#e6550d'
+                            , opacity: 1
+                            , weight: 2
+                            , fillOpacity: 0
+                            , radius: calcRadius(Number(feature.properties[currentAnimal] / feature.properties.Total))
+                        });
+                    }
+                }).addTo(map);
+
+//                run the sequenceUI function
+                sequenceUI();
+
+//                run the infoWindow function
+                infoWindow();
+
+
+            }
+
+//            set up the updateSymbols function
+            function updateSymbols() {
+
+                var radius, // variable to hold each radius
+                    allRadii = []; // empty array to hold all values
+
+                currentLayer.eachLayer(function (layer) {
+                    // store a reference to the radius value
+
+                    radius = calcRadius(Number(layer.feature.properties[currentAnimal] / layer.feature.properties.Total));
+                    // use it to set the radius of the layer
+                    layer.setRadius(radius);
+                });
+
+//                run the drawLegend function
+                drawLegend();
+
+
+            }
+
+
+            //            set up the calulate radius function
+            function calcRadius(val) {
+//                set the radius to be proportional to the circle area
+                var radius = Math.sqrt(val / Math.PI);
+//                multiply the radius times 20 so the circles are appropriately sized when viewing the map and not too small
+                return radius * 20;
+            }
+
+//            set up the draw legend function
+            function drawLegend() {
+
+//                use Jquery to select the legend element as the legend variable
+                var legend = $('.legend');
+
+//                set up the svg circles file
+                var svgCircles = '';
+
+//                draw the svg circles as a fixed legend showing 1, 10 and 20 values (I set this up myself, thinking that always updating the legend doesnt make sense if its a simple per capita value for each livestock type)
+                svgCircles += '<circle cx="80" cy="55" r="50" stroke="#e6550d" stroke-width="1" fill="#cbc9e2" />';
+                svgCircles += '<text x = 70 y = 20 fill= "#173e43">20</text>';
+                svgCircles += '<circle cx="80" cy="70" r="35" stroke="#e6550d" stroke-width="1" fill="#cbc9e2" />';
+                svgCircles += '<text x=70 y = 50 fill= "#173e43">10</text>';
+                svgCircles += '<circle cx="80" cy="94" r="11" stroke="#e6550d" stroke-width="1" fill="#cbc9e2" />';
+                svgCircles += '<text x=75 y = 98 fill= "#173e43">1</text>';
+
+//                add the svgCircles to the html in the legend element
+                legend.html(svgCircles)
+
+            }
+
+//            set up the sequenceUI function
+            function sequenceUI() {
+
+//                set the output variable to be the livestock span element that shows the current livestock type
+                var output = $('#livestock span');
+
+//                select the data switcher radio button input
+                $('#data-switcher input'
+//                    first set up the input to show the current animal as Cattle and draw the map accordingly
+                        , function () {
+                            currentAnimal = 'Cattle';
+                            updateSymbols();
+                            output.html(currentAnimal);
+                            console.log(currentAnimal);
+                        })
+//                if the user changes the radio button, update the currentAnimal variable to feed into all the other functions in the script and update teh livestock span element to show the current animal
+                    .on('change', function () {
+                        currentAnimal = $(this).val();
+                        updateSymbols();
+                        output.html(currentAnimal);
+                        console.log(currentAnimal);
+                    });
+
+            }
+
+//            set up the infoWindow function
+            function infoWindow() {
+
+//                make the info variable select the info element
+                var info = $('#info');
+
+//                set and event listener on mouseover over the current layer and call the following function
+                currentLayer.on('mouseover', function (e) {
+                    var props = e.layer.feature.properties;
+//                    show the district and livestock per capita values of the current Animal in the info window on mouseover (using jquery to add HTML elements to the window)
+                    info.show();
+                    $('#info span').text(props.District);
+                    $(".livestockCapita span:first-child").text(String(currentAnimal) + "  per Capita");
+                    console.log(props.Total);
+                    $(".livestockCapita span:last-child").text((props[currentAnimal] / props.Total).toLocaleString());
+
+//                    set up the mouseover to change the fill opacity of the circle on mouseover
+                    e.layer.setStyle({
+                        fillOpacity: .6
+                    });
+
+                });
+                
+//                on mouseout hide the info window, and set the fill back to normal
+                currentLayer.on('mouseout', function (e) {
+                    info.hide();
+                    e.layer.setStyle({
+                        fillOpacity: 0
+                    });
+                });
+
+//                set up the info window based on mousemovements by listening to mousemove in the entire document
+                $(document).mousemove(function (e) {
+                    // first offset from the mouse position of the info window
+                    info.css({
+                        "left": e.pageX + 6
+                        , "top": e.pageY - info.height() - 15
+                    });
+
+                    // if it crashes into the top, flip it lower right
+                    if (info.offset().top < 4) {
+                        info.css({
+                            "top": e.pageY + 15
+                        });
+                    }
+                    // do the same for crashing into the right
+                    if (info.offset().left + info.width() >= $(document).width() - 40) {
+                        info.css({
+                            "left": e.pageX - info.width() - 30
+                        });
+                    }
+                });
+            }
+        </script>
+</body>
+
+</html>
