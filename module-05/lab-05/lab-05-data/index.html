@@ -196,7 +196,7 @@
 <body>
         <div id='map'></div>
         <div id='side-panel'>
-            <h1>Livestock Per Capita in Kenya - 2009 counts by District</h1>
+            <h1>Livestock in Kenya - 2009 counts by District</h1>
             <p></p>
             <h3>This map shows the livestock per capita in each district in Kenya. Select a species of animal in the option menu to see how many animals per person were observed in each area. For detailed information move your mouse over the circle. 
             <h4>Data source:  <a href="https://opendata.go.ke/">Kenya Open Data Portal</a> and reflects information collected in the 2009 census.</h4>
@@ -327,7 +327,7 @@
 //                set up the svg circles file
                 var svgCircles = '';
 
-//                draw the svg circles as a fixed legend showing 1, 10 and 20 values (I set this up myself, thinking that always updating the legend doesnt make sense if its a simple per capita value for each livestock type)
+//                draw the svg circles as a fixed legend showing 1, 10 and 20 values (I set this up thinking that always updating the legend doesnt make sense if its a simple value for each livestock type)
                 svgCircles += '<circle cx="80" cy="55" r="50" stroke="#e6550d" stroke-width="1" fill="#cbc9e2" />';
                 svgCircles += '<text x = 70 y = 20 fill= "#173e43">20</text>';
                 svgCircles += '<circle cx="80" cy="70" r="35" stroke="#e6550d" stroke-width="1" fill="#cbc9e2" />';
