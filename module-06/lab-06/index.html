@@ -9,7 +9,7 @@
         body {
             padding: 0;
             margin: 0;
-            background: whitesmoke;
+            background: black;
             font-family: Montserrat, sans-serif;
         }
         
@@ -17,7 +17,7 @@
             width: 900px;
             height: 600px;
             margin: 10px auto;
-            border: 1px solid #d3d3d3;
+            border: 1px solid #000000;
         }
         
         .county {
@@ -28,26 +28,55 @@
             fill: yellow;
         }
         
-        h1, h2 {
+        h1, h2, h3 {
             position: absolute;
             left: 20px;
             top: 10px;
             font-size: 2em;
             font-weight: 200;
-            color: #4E71A6;
+            color: #FFFFFF;
+        }
+        
+        h4 {
+            position: absolute;
+            right: 20px;
+            bottom: 10px;
+            font-size: 1em;
+            color: #FFFFFF;
         }
         
         h2 {
+            top: 100px;
+            font-size: 1.2em;
+        }
+        
+        h3 {
             top: 60px;
             font-size: 1.2em;
         }
         
+        /* unvisited link */
+        a:link {
+            color: white;
+        }
+
+        /* visited link */
+        a:visited {
+            color: red;
+        }
+
+        /* mouse over link */
+        a:hover {
+            color: paleturquoise;
+        }
     </style>
 </head>
 
 <body>
     
     <h1>Appalachian Cattle</h1>
+    <h3>2012 National Agricultural Statistics Service</h3>
+    <h4>Created by <a href='http://vdl.uky.edu/FacultyAndSectionHeads/DrJackieSmith.aspx'>Dr. Jackie Smith, November 2016</a></h4>
     <h2><span class="countyName"></span><br/>
         <span class="value"></span></h2>
 
@@ -82,7 +111,7 @@
         var projection = d3.geo.mercator() // create a new d3 projection function for ubiquitous web mercator
                            .center([0, 38.4])  // centering the project with lat value
                            .rotate([80.45, 0])  // rotating the earth to lon value
-                           .scale(2200) // scale the projection until it fits on the screen
+                           .scale(2100) // scale the projection until it fits on the screen
                            .translate([width/2, height/2]); // center the SVG element in the center of the page
         
         // Construct a path generator to draw the SVG paths from the GeoJSON in the specified projection
@@ -94,7 +123,7 @@
             .defer(d3.json, "https://jsmit8.cartodb.com/api/v2/sql?format=GeoJSON&q=SELECT * FROM appalachiananimalagriculture") // Load the US counties TopoJSON file
             .await(makeMap); // Once the data finishes loading, make the map
         
-        // Creates the map once all of the GeoJSON data finishes loading
+            
         function makeMap(error, counties) {
             
             // Determine the breaks for the choropleth map. Use the Simple Statistics jenks() method to return 5 natural class breaks based on the number of cattle per county. Use the JavaScript map() method to create an array of the number of cattle in each county.
@@ -107,7 +136,7 @@
             breaks.pop(); // remove the max value
             
             // Define the array of colors to use for each class            
-            var colors = ["#ECF0F6","#B2C2DB","#6182B5","#4E71A6","#43618F"];
+            var colors = ["#6baed6","#4292c6","#2171b5","#08519c","#08306b"];
             
             // Use the d3 threshold scale to set the values in the breaks array as the thresholds for each class in the choropleth. Set the colors array as the color for features whose value falls within each class.
             var jenks = d3.scale.threshold()
