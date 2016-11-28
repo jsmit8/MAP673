@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>673 Module 07 Carto Starter Template</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+
+    <link rel="stylesheet" href="https://cartodb-libs.global.ssl.fastly.net/cartodb.js/v3/3.15/themes/css/cartodb.css" />
+
+    <style>
+        html,
+        body,
+        #map {
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            background: black;
+        }
+        
+        #title {
+            position: absolute;
+            font-family: "Work Sans", sans-serif;
+            left: 5px;
+            top: 10px;
+        }
+        h1 {
+            padding: 68px 25px 8px 15px;
+            margin: 0;
+            background: none;
+            color: ghostwhite;
+            font-weight: 400;
+            font-size: 2em;
+            text-align: left;
+        }
+      
+        h2 {
+            padding: 8px 25px 8px 15px;
+            margin: 0;
+            background: none;
+            color: ghostwhite;
+            font-weight: 200;
+            font-size: 1.5em;
+            text-align: left;
+        }
+        body > div.cartodb-header {
+            display: none;
+            position: absolute;
+            top: 55%;
+            left: 1%;
+            width: 35%;
+            background-color: rgba(0,0,0,0);
+            line-height: normal;
+            font-family: "Work Sans", sans-serif;
+        } 
+        
+    </style>
+</head>
+
+<body>
+
+    <div id="map"></div>
+    <div id="title">
+        <h1>National Rabies 2014</h1>
+        <h2><i>Cases by State</i></h2>
+        
+    </div> 
+    <script src="https://cartodb-libs.global.ssl.fastly.net/cartodb.js/v3/3.15/cartodb.js"></script>
+    <script type="cartocss/html" id="counties-styles">
+        #layer {
+            polygon-fill: ramp([_2014cases], (#fee5d9, #fcae91, #fb6a4a, #de2d26, #a50f15), jenks);
+            line-width: 1;
+            line-color: #cccccc;
+            line-opacity: 0.5;
+            }
+             
+    </script>
+  
+   <div id="map"></div>
+
+<script>
+  sublayer.infowindow.set({
+    template: $('#infowindow_template').html(),
+    width: 218,
+    maxHeight: 100
+  });
+</script>
+    <script type="infowindow/html" id="infowindow_template">
+                <div class="cartodb-popup">
+         <a href="#close" class="cartodb-popup-close-button close">x</a> 
+    <div class="cartodb-popup dark v2">
+  <a href="#close" class="cartodb-popup-close-button close">x</a>
+  <div class="cartodb-popup-content-wrapper">
+    <div class="cartodb-popup-content">
+      
+      <p>{{name}}</p>
+     <h4>Reservoir</h4>
+      <p>{{resevoir}}</p>
+     <h4>2014 Positive Submissions</h4>
+      <p>{{_2014cases}}</p>
+      <h4>Percent of Submissions Positive</h4>
+      <p>{{perpos}}</p>
+      <h4>2013 Positive Submissions</h4>
+      <p>{{_2013cases}}</p>
+      <h4>Change from 2013 to 2014</h4>
+      <p>{{perchange}}% {{incdec}}</p>
+      
+      <p>Domestic Animals Positive {{domestics}}</p>
+     
+      <p>Wildlife Animals Positive {{wildlife}}</p>
+      
+      <p>Fox Positive {{foxes}}</p>
+     
+      <p>Bat Positive {{bats}}</p>
+      
+      <p>Bovine Positive{{bovine}}</p>
+     
+      <p>Canine Positive {{canine}}</p>
+     
+      <p>Caprine/Ovine Positive {{caprineovi}}</p>
+      
+      <p>Equine/Mule Positive {{equinemule}}</p>
+     
+      <p>Feline Positive {{feline}}</p>
+    
+      <p>Human Positive {{humans}}</p>
+      
+      <p>Raccoon Positive {{raccoons}}</p>
+   
+      <p>Skunk Positive {{skunks}}</p>
+    </div>
+  </div>
+  <div class="cartodb-popup-tip-container"></div>
+</div>
+</script>
+    
+    <script>
+        var map = L.map('map', {
+        center: [-10, 0],
+        zoom: 4
+        });
+        
+        var sourceObject = {
+            user_name: 'ukvdlmap',
+            type: 'carto',
+            sublayers: [
+           
+            {
+              sql: "SELECT ST_Transform(the_geom, 2163) AS the_geom_webmercator, cartodb_id, _2014cases FROM national_rabies_2014",
+              cartocss: $("#counties-styles").text()
+            }
+            ]
+        }
+        cartodb.createLayer(map, sourceObject).addTo(map);
+           
+        
+        var legend = new cdb.geo.ui.Legend({
+            type: "custom",
+            show_title: true,
+            title: "Positive Cases",
+            template: $('#legend_template').html(),
+            visible: true,
+            });
+        
+        $('#map').append(legend.render().el);
+       
+       
+        
+    cartodb.createLayer(map, sourceObject).addTo(map);
+    var i = new cdb.geo.ui.Header({
+            model: new cdb.core.Model({
+            extra: {
+            title: "NOTES ABOUT THE MAP",
+            description: "Data From CDC Rabies page at http://www.cdc.gov/rabies/. Map Created by Dr. Jackie Smith, November 28, 2016",
+            show_title: true,
+            show_description: true,
+            }
+        }),
+          
+     template: cdb.core.Template.compile(' \
+        <div class="content">\
+        <div class="title">{{{ title }}}</div>\
+        <div class="description">{{{ description }}}</div>\
+        </div>',
+        'mustache'
+        )
+      });
+      
+        $('body').append(i.render().el);
+    </script>
+</body>
+
+</html>
