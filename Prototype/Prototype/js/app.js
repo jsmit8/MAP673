@@ -11,7 +11,7 @@
   });
 
 
-  var KyCounties = omnivore.csv('ukvdl_accessions.csv')
+  var KyCounties = omnivore.csv('data/ukvdl_accessions.csv')
       .on('ready',function(e) {
           drawMap(e.target.toGeoJSON())
       })
