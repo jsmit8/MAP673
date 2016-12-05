@@ -4,163 +4,13 @@
     <meta charset=utf-8 />
     <title>UKVDL Prototype</title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.2/d3.min.js"></script>
-    <script src='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js'></script>
-    <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.2.0/leaflet-omnivore.min.js'></script>
-    <script src='https://code.jquery.com/jquery-3.1.1.min.js'></script>
-    <script src='https://npmcdn.com/simple-statistics@2.0.0/dist/simple-statistics.min.js'></script>
 
-    <link href='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.css' rel='stylesheet'/>
+    <link href='https://api.mapbox.com/mapbox.js/v3.0.1/mapbox.css' rel='stylesheet' />
     <link href="https://fonts.googleapis.com/css?family=Scope+One" rel="stylesheet"/>
-    <style>
-        body {
-            margin:0;
-            padding:0;    
-            font-family: 'Scope One', serif;    
-        }
-
-
-        #side-panel {
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 33%;
-            background-color: #bdbdbd;
-            
-            overflow-y: scroll;
-            box-shadow:  0 0 15px rgba(0,0,0,0.2);
-        }
-        
-        h1{
-            padding: 8px 25px 8px 15px;
-            margin: 0;
-            background: blue;
-            color: whitesmoke;
-            font-weight: 700;
-            font-size: 1.5em;
-            text-align: center;
-            box-shadow:  0 0 15px rgba(0,0,0,0.2);
-        }
-        h2 {
-            margin: 10;
-            padding: 8px 25px 8px 15px;
-            color: #2171b5;
-            font-weight: 5700;
-            font-size: 1em;
-            text-align: left;
-        }
-        #side-panel p {
-            margin: 20px 20px 4px; 
-            padding: 0 25px 0 1px;
-            color: #f7f7f7;
-            text-align: justify;
-            font-size: 0.8em;
-            clear: both
-        }
-        #side-panel p:after {
-            content: '';
-            display: block;
-            
-            
-        }
-        #side-panel img {
-            position: absolute;
-            margin: 80% -10%;
-        }
-        #map {
-            position:absolute;
-            top:0;
-            bottom:0;
-            right: 0;
-            width: 67%;
-        }
-
-
-            
-        }
-        #filter{
-            width: 100%;
-        }
-
-        #ui-data{
-            position: absolute;
-            top: 130px;
-            left: 11px;
-            width: 200px;
-            padding: 5px 150px 10px 20px;
-            background: rgba(90, 90, 90, 0.30);
-            border: 2px solid #2171b5;
-            border-radius: ;
-            color: white;
-            box-shadow:  0 0 15px rgba(0,0,0,0.2);   
-        }
-
-        #year{
-            padding:175px 200px 10px 90px;
-            color: white;
-            font-weight: 200;
-            font-size: 1.3em;
-            text-align: left;
-            box-shadow:  0 0 15px rgba(0,0,0,0.2);
-        }
-        
-       
-        #info {
-            position: absolute;
-            left: 3px;
-            top: 3px;
-            padding: 6px 15px 8px;
-            font-size: .8em;
-/*            position: absolute;
-            background: whitesmoke;
-            
-            padding: 6px 15px 8px;
-            border: 2px solid #d3d3d3;
-            border-radius: 7px;
-            box-shadow:  0 0 15px rgba(0,0,0,0.2);*/
-        }
-        #info p{
-            margin: 3px 0px 4px;
-        }
-        
-        .axis {
-          font: 10px sans-serif;
-        }
-
-        .axis-title {
-          text-anchor: end;
-        }
-
-        .axis path,
-        .axis line {
-          fill: none;
-          stroke: #000;
-          shape-rendering: crispEdges;
-        }
-
-        .axis--x path {
-          display: none;
-        }
-
-        .axis--y .tick:not(.tick--one) line {
-          stroke-opacity: .15;
-        }
-
-        .line {
-          fill: none;
-          stroke: steelblue;
-          stroke-width: 1.5px;
-          stroke-linejoin: round;
-          stroke-linecap: round;
-        }
-    
-       
-        
-    </style>
+    <link href="css/styles.css" rel='stylesheet' />
 </head>
 <body>
-    
+
 <div id='side-panel'>
     <h1>UKVDL Prototype frame</h1>
     <h2>Where do our clients submit from?</h2>
@@ -170,15 +20,15 @@
     <h2><br>About the map:</h2>
     <p>this is going to be a map</a></p>
     <p>Created by Dr. Jackie Smith and James Mason</p>
-    
-   
-        
 
 
-    
+
+
+
+
     <div id ='ui-data'>
         <label> Choose Accessions, Total Animals or Species:</label>
-        <select id = "kyCounty"> 
+        <select id = "kyCounty">
             <option value="ACC_" selected>Accessions</option>
             <option value="EQ_" >Equine</option>
             <option value="BOV_" >Bovine</option>
@@ -192,127 +42,20 @@
             <option value="MIS_" >Miscellaneous</option>
             <option value="TOT_" >Total Animals</option>
         </select>
-        
+
 
     </div>
 
-    
+
     </div>
-    
+
  <div id='map'></div>
 
-    
-    <script>
-        L.mapbox.accessToken = 'pk.eyJ1IjoianNtaXQ4IiwiYSI6ImNpdXR6cmlzeDAyaTUydXBzY2pyeTQ1ajIifQ.OsqnhovcG7e5arkfsr2hyA';
-
-        var map = L.mapbox.map('map', 'mapbox.outdoors', {
-            center: [37.8, -85.8],
-            zoom: 6,
-            minZoom: 2,
-            maxZoom: 15,
-           
-        });
-
-        
-        var KyCounties = omnivore.csv('ukvdl_accessions.csv')
-            .on('ready',function(e) {
-                drawMap(e.target.toGeoJSON())
-            })
-       
-            .on('error', function(e) {
-                console.log(e.error[0].message)
-            });
-			
-             
-        var currentYear = 1995,
-            data,
-            kyCountydata = 'ACC_';
-
-        function drawMap(mapData){
-            
-             data = L.geoJson(mapData, {
-                pointToLayer: function(feature, layer){
-                    return L.circleMarker(layer, {
-                        color: '#54278f',
-                        opacity: 2,
-                        weight: 1.0,
-                        fillOpacity: 0,
-                    });
-
-                }
-
-            }).addTo(map);
-            selectionChanger();
-			updateSymbols();
-        }
-       function selectionChanger(){
-            
-           $('select[id="kyCounty"]').change(function(){
-                kyCountydata = $(this).val();
-                updateSymbols();
-          });            
-            
-     };      
-	  
-      function updateSymbols() {
-            
-            
-          
-            
-          data.eachLayer(function(layer) {
-              var props = layer.feature.properties;
-             var animalData = Number(props[kyCountydata + currentYear])
-             var radius = calcRadius(animalData);             
-              infoWindow(props, animalData);
-                    
-            });               
-        }
-        
-       function calcRadius(val) {
-            
-            var radius = Math.sqrt(val/Math.PI);
-            return radius * .6;
-            
-        }
-              
-        
-        function infoWindow() {
-            var info = $('#info');
-            
-            data.on('mouseover', function(e){
-                
-
-                info.show()
-                
-                var props = e.layer.feature.properties;
-                var displayMetro = props.county;
-                var displayData = Number(props[kyCountydata + currentYear]);
-                $('#info span').text(displayMetro+' '+currentYear);
-                $('.kyCountydata span').text((displayData*1000000).toLocaleString());
-                
-                e.layer.setStyle({ fillOpacity: .6 });
-           
-        
-                updateInfo(xData, yData)
-                       
-                
-            });
-                    
-            data.on('mouseout', function(e){
-               
-                e.layer.setStyle({ fillOpacity: 0});
-                
-            });
-            
-        }
-            function updateInfo(){
-                
-            }
-
-            
-        
-    
-
-    </script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.2/d3.min.js"></script>
+   <script src='https://api.mapbox.com/mapbox.js/v3.0.1/mapbox.js'></script>
+   <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.2.0/leaflet-omnivore.min.js'></script>
+   <script src='https://code.jquery.com/jquery-3.1.1.min.js'></script>
+   <script src='https://npmcdn.com/simple-statistics@2.0.0/dist/simple-statistics.min.js'></script>
+   <script src='js/app.js'></script>
 </body>
 </html>
